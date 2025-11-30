@@ -245,7 +245,7 @@
       const lockEl = clone.querySelector('.lock');
 
       if(ENABLE_DATE_LOCK){
-        const isOpen = (todayMonth === 12 && todayDay >= i);
+        const isOpen = (todayMonth === 11 && todayDay >= i);
         if(isOpen){
           clone.classList.add('opened');
           lockEl.style.display='none';
@@ -296,3 +296,4 @@
   </script>
 </body>
 </html>
+
