@@ -37,6 +37,9 @@
         position: absolute;
         transition: transform 0.1s;
         box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+
+        /* IMPORTANT POUR MOBILE */
+        touch-action: none;
     }
 </style>
 </head>
@@ -50,20 +53,23 @@
 const container = document.getElementById("puzzle-container");
 
 const grid = 6;
-const pieceSize = 600 / grid;   // = 100px par pièce
-const magnetRange = 20;         // distance de l'aimant
+const pieceSize = 600 / grid;   
+const magnetRange = 20;
 
-// Création des 36 pièces
+/* ------------------------------
+   CRÉATION DES 36 PIÈCES
+------------------------------ */
 for (let i = 0; i < grid; i++) {
     for (let j = 0; j < grid; j++) {
 
         const piece = document.createElement("div");
         piece.classList.add("piece");
 
-        // Position de la découpe
-        piece.style.backgroundPosition = `-${j * pieceSize}px -${i * pieceSize}px`;
+        // Position du morceau dans l'image
+        piece.style.backgroundPosition =
+            `-${j * pieceSize}px -${i * pieceSize}px`;
 
-        // Position de départ aléatoire autour du puzzle
+        // Position de départ aléatoire
         piece.style.left = (Math.random() * 500 - 50) + "px";
         piece.style.top = (Math.random() * 500 - 50) + "px";
 
@@ -76,38 +82,69 @@ for (let i = 0; i < grid; i++) {
     }
 }
 
-function makeDraggable(piece) {
-    let offsetX, offsetY;
+/* ------------------------------
+   GESTION SOURIS + TACTILE
+------------------------------ */
 
-    piece.addEventListener("mousedown", (event) => {
-        offsetX = event.clientX - piece.offsetLeft;
-        offsetY = event.clientY - piece.offsetTop;
+function getPos(e) {
+    if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+}
+
+function makeDraggable(piece) {
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function startDrag(e) {
+        e.preventDefault();
+
+        const pos = getPos(e);
+        offsetX = pos.x - piece.offsetLeft;
+        offsetY = pos.y - piece.offsetTop;
 
         piece.style.zIndex = 1000;
 
-        function onMouseMove(event) {
-            piece.style.left = event.clientX - offsetX + "px";
-            piece.style.top = event.clientY - offsetY + "px";
+        document.addEventListener("mousemove", onDrag);
+        document.addEventListener("mouseup", endDrag);
 
-            // 🧲 Aimant
-            const dx = piece.offsetLeft - piece.dataset.correctX;
-            const dy = piece.offsetTop - piece.dataset.correctY;
+        document.addEventListener("touchmove", onDrag, { passive: false });
+        document.addEventListener("touchend", endDrag);
+    }
 
-            if (Math.abs(dx) < magnetRange && Math.abs(dy) < magnetRange) {
-                piece.style.left = piece.dataset.correctX + "px";
-                piece.style.top = piece.dataset.correctY + "px";
-            }
+    function onDrag(e) {
+        e.preventDefault();
+        const pos = getPos(e);
+
+        piece.style.left = pos.x - offsetX + "px";
+        piece.style.top = pos.y - offsetY + "px";
+
+        // 🎯 AIMANT
+        const dx = piece.offsetLeft - piece.dataset.correctX;
+        const dy = piece.offsetTop - piece.dataset.correctY;
+
+        if (Math.abs(dx) < magnetRange && Math.abs(dy) < magnetRange) {
+            piece.style.left = piece.dataset.correctX + "px";
+            piece.style.top = piece.dataset.correctY + "px";
         }
+    }
 
-        function onMouseUp() {
-            document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp);
-            piece.style.zIndex = 1;
-        }
+    function endDrag() {
+        document.removeEventListener("mousemove", onDrag);
+        document.removeEventListener("mouseup", endDrag);
 
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-    });
+        document.removeEventListener("touchmove", onDrag);
+        document.removeEventListener("touchend", endDrag);
+
+        piece.style.zIndex = 1;
+    }
+
+    // Pour PC
+    piece.addEventListener("mousedown", startDrag);
+
+    // Pour téléphone
+    piece.addEventListener("touchstart", startDrag, { passive: false });
 }
 </script>
 
