@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini-enquête — Le Mystère du Casier 17</title>
+  <style>
+    :root{
+      --bg:#fffafc;
+      --card:#fff;
+      --accent:#6d1a72;
+      --accent-2:#b3004b;
+      --muted:#6b6b6b;
+    }
+    body{
+      margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#f7f0f8, #fffafc);
+      color:#222;display:flex;align-items:center;justify-content:center;padding:28px;
+    }
+    .container{width:100%;max-width:900px;background:var(--card);border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(100,30,80,0.08)}
+    h1{margin:0 0 6px;color:var(--accent)}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    .layout{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    @media(max-width:880px){.layout{grid-template-columns:1fr}}
+    .card{padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fff7fc);border:1px solid rgba(110,20,70,0.04)}
+    .suspects{display:flex;flex-direction:column;gap:10px}
+    .suspect{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;background:rgba(109,26,114,0.03)}
+    .suspect strong{display:block}
+    button, .btn{
+      background:var(--accent-2);color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;
+      transition:transform .12s, box-shadow .12s;
+    }
+    button.secondary{background:#eee;color:#333;font-weight:600}
+    button:active{transform:translateY(1px)}
+    .clues{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+    .clue{background:#fff;padding:10px;border-radius:8px;border:1px dashed rgba(0,0,0,0.06);color:#333}
+    .result{margin-top:12px;padding:12px;border-radius:8px}
+    .hidden{display:none}
+    footer{margin-top:14px;text-align:right;color:var(--muted);font-size:13px}
+    .hint{background:linear-gradient(90deg,#fff7fb,#fff);border-left:4px solid var(--accent);padding:10px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>🔎 Mini-enquête — Le Mystère du Casier 17</h1>
+    <p class="lead">Cas : casier n°17 forcé pendant la nuit. Un cahier de sciences a disparu. Trois suspects — à toi de jouer !</p>
+
+    <div class="layout">
+      <!-- LEFT: content -->
+      <div>
+        <div class="card">
+          <h3>Scénario</h3>
+          <p>Ce matin, un surveillant découvre le casier n°17 ouvert et le cahier de sciences manquant. Le cadenas a été forcé discrètement. Une note déchirée a été retrouvée : <em>“… besoin du cahier pour finir …”</em>. Une trace de terre sèche se trouve devant le casier.</p>
+
+          <h4>Suspects</h4>
+          <div class="suspects" id="suspectsList">
+            <div class="suspect" data-id="lea">
+              <div>
+                <strong>Léa</strong>
+                <small>Répétition théâtre hier jusqu'à 18h. Partie en bus. Connaît la victime.</small>
+              </div>
+              <div>
+                <button onclick="accuse('lea')">Accuser</button>
+              </div>
+            </div>
+
+            <div class="suspect" data-id="karim">
+              <div>
+                <strong>Karim</strong>
+                <small>Casier à côté du 17. Vu près des casiers vers 17h selon des témoins.</small>
+              </div>
+              <div>
+                <button onclick="accuse('karim')">Accuser</button>
+              </div>
+            </div>
+
+            <div class="suspect" data-id="manon">
+              <div>
+                <strong>Manon</strong>
+                <small>Devait rendre un devoir; affirme être chez elle. Fortes compétences pour ouvrir serrures.</small>
+              </div>
+              <div>
+                <button onclick="accuse('manon')">Accuser</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+            <button onclick="toggleClues()" id="btnClues" class="secondary">Afficher/Masquer les indices</button>
+            <button onclick="hintOne()" class="secondary">Demander un indice</button>
+            <button onclick="revealSolution()">Révéler la solution</button>
+          </div>
+
+          <div class="clues hidden" id="cluesArea" aria-live="polite">
+            <div class="clue">🔎 Trace : une trace de terre sèche devant le casier.</div>
+            <div class="clue">🔒 Méthode : le cadenas a été forcé de façon discrète (outils, pas d'effraction brutale).</div>
+            <div class="clue">✉️ Note : fragment trouvé : “… besoin du cahier pour finir …”</div>
+          </div>
+
+          <div id="feedback" class="result hidden"></div>
+        </div>
+
+        <div style="height:14px"></div>
+
+        <div class="card">
+          <h3>Ta boîte à outils d'enquête</h3>
+          <ul>
+            <li>Recoupe les alibis avec les indices.</li>
+            <li>La note suggère un besoin urgent pour finir quelque chose (devoir?).</li>
+            <li>La trace de terre peut indiquer un extérieur récent (quelqu’un revenu du dehors).</li>
+            <li>Forcer discrètement suppose un maniement d'outils ou de techniques (pas un coup de force).</li>
+          </ul>
+
+          <div style="margin-top:12px" id="extraHints"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: sidebar -->
+      <aside>
+        <div class="card">
+          <h4>Indice rapide</h4>
+          <p class="hint">Pense aux mobiles : qui avait vraiment besoin du cahier pour terminer un travail ? Qui a la proximité physique au moment indiqué ?</p>
+
+          <h4 style="margin-top:12px">Actions</h4>
+          <div style="display:flex;gap:8px;flex-direction:column">
+            <button onclick="resetCase()">🔄 Réinitialiser l'enquête</button>
+            <button onclick="revealSolution(true)" class="secondary">🗝️ Solution & explication détaillée</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <h4>Règle</h4>
+          <p style="color:var(--muted)">Tu peux accuser plusieurs suspects (pour tester). Le bouton "Révéler" donnera la solution officielle et l'explication.</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Amuse-toi bien — indice bonus si tu le veux ensuite !</footer>
+  </div>
+
+  <script>
+    // logique d'enquête
+    const solution = {
+      culprit: 'manon',
+      reason: "Manon avait besoin du cahier pour finir un devoir. La note incomplète \"... besoin du cahier pour finir ...\" correspond à ce mobile. Sa connaissance pour ouvrir serrures explique la manière discrète d'ouvrir le cadenas. La trace de terre suggère qu'elle est rentrée de l'extérieur (ou a transporté le cahier).",
+      explanation: `Solution : <strong>Manon</strong>.<br>
+      Pourquoi : la note indique un besoin urgent pour finir quelque chose (devoir). Manon avait précisément ce mobile. Le cadenas a été forcé discrètement — Manon sait manipuler des serrures. La trace de terre peut indiquer qu'elle a été dehors avant (ou a caché/transporté le cahier).`
+    };
+
+    let accused = [];
+
+    function toggleClues(){
+      const area = document.getElementById('cluesArea');
+      area.classList.toggle('hidden');
+      document.getElementById('btnClues').textContent = area.classList.contains('hidden') ? 'Afficher/Masquer les indices' : 'Masquer les indices';
+    }
+
+    function accuse(id){
+      const feedback = document.getElementById('feedback');
+      if(!accused.includes(id)) accused.push(id);
+      let name = id === 'lea' ? 'Léa' : id === 'karim' ? 'Karim' : 'Manon';
+      feedback.classList.remove('hidden');
+      if(id === solution.culprit){
+        feedback.innerHTML = `<div style="background:#e9fff2;border-left:4px solid #23a455;padding:10px;border-radius:6px;">
+          Bravo — tu as trouvé une piste solide : ${name} est le/la coupable probable.
+        </div>`;
+      } else {
+        feedback.innerHTML = `<div style="background:#fff3f4;border-left:4px solid #d3395a;padding:10px;border-radius:6px;">
+          ${name} est suspect(e) mais les indices ne collent pas totalement. Continue à chercher.
+        </div>`;
+      }
+      // afficher accusation dans la console d'enquête (visuel)
+      updateExtraHints();
+    }
+
+    function hintOne(){
+      const box = document.getElementById('extraHints');
+      // donne un indice additionnel utile
+      box.innerHTML = `<div class="clue">Indice supplémentaire : la note retrouvée parle d'un \"finir\" — probablement un travail scolaire ou un devoir.</div>`;
+    }
+
+    function revealSolution(detailed=false){
+      const fb = document.getElementById('feedback');
+      fb.classList.remove('hidden');
+      if(detailed){
+        fb.innerHTML = `<div style="background:#f7f6ff;border-left:4px solid var(--accent);padding:12px;border-radius:6px;">
+          <strong>Solution officielle : Manon</strong><br><br>
+          ${solution.explanation}<br><br>
+          <em>Si tu veux, on peut complexifier l'enquête (ajouter fausses pistes, empreintes, témoins contradictoires).</em>
+        </div>`;
+      } else {
+        fb.innerHTML = `<div style="background:#fff7e6;border-left:4px solid #f09a2f;padding:10px;border-radius:6px;">
+          Réponse : <strong>Manon</strong>. (Clique sur "Solution & explication détaillée" pour plus d'infos.)
+        </div>`;
+      }
+    }
+
+    function updateExtraHints(){
+      const el = document.getElementById('extraHints');
+      if(accused.length === 0){
+        el.innerHTML = '';
+        return;
+      }
+      el.innerHTML = `<div style="padding:10px;background:#fbfbff;border-radius:8px">
+        <strong>Accusations :</strong> ${accused.map(id=> id==='lea'?'Léa':id==='karim'?'Karim':'Manon').join(', ')}.
+      </div>`;
+    }
+
+    function resetCase(){
+      accused = [];
+      document.getElementById('feedback').classList.add('hidden');
+      document.getElementById('extraHints').innerHTML = '';
+      const clues = document.getElementById('cluesArea');
+      clues.classList.add('hidden');
+      document.getElementById('btnClues').textContent = 'Afficher/Masquer les indices';
+    }
+  </script>
+</body>
+</html>

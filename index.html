@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendrier de l'Avent — Cadeau par jour</title>
+  <style>
+    :root{
+      --bg: #2a0033;
+      --card: #f8e9ff;
+      --accent: #b3004b;
+      --glass: rgba(255,255,255,0.08);
+      --accent-2: #6d1a72;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:linear-gradient(180deg,#3b0052 0%,var(--bg) 100%);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:var(--card);
+      display:flex;align-items:center;justify-content:center;
+      padding:24px;
+    }
+
+    .wrapper{width:100%;max-width:1100px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:1.6rem;margin:0}
+    .subtitle{opacity:.85;font-size:.95rem}
+
+    .grid{
+      display:grid;grid-template-columns:repeat(6,1fr);gap:12px;
+    }
+    @media (max-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
+    @media (max-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+    .door{
+      background:linear-gradient(180deg,var(--glass), rgba(255,255,255,0.03));
+      border-radius:14px;
+      padding:18px;
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+      min-height:110px;
+      display:flex;align-items:center;justify-content:center;flex-direction:column;
+      transition:transform .22s ease, box-shadow .22s ease;
+      box-shadow:0 6px 18px rgba(0,0,0,0.45), inset 0 -2px 6px rgba(255,255,255,0.03);
+    }
+    .door:hover{transform:translateY(-6px)}
+
+    .num{
+      font-weight:700;
+      font-size:24px;
+      color:var(--card);
+      text-shadow:0 2px 12px rgba(0,0,0,0.6);
+    }
+
+    .lock{
+      position:absolute;
+      top:10px;right:10px;
+      font-size:12px;
+      padding:6px 8px;
+      border-radius:8px;
+      background:rgba(0,0,0,0.35);
+    }
+
+    .opened{
+      background:linear-gradient(180deg,#460036,#b3004b);
+      color:#fff0ff;
+      box-shadow:0 0 12px rgba(176,0,100,0.6);
+    }
+    .opened .num{
+      color:#fff;
+      text-shadow:0 2px 10px rgba(255,0,153,0.5);
+    }
+
+    .ribbon{
+      position:absolute;
+      left:12px;top:12px;
+      font-weight:600;
+      background:var(--accent);
+      color:white;
+      padding:6px 8px;
+      border-radius:8px;
+      font-size:12px;
+    }
+
+    .modal-backdrop{
+      position:fixed;inset:0;
+      background:rgba(0,0,0,0.55);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;z-index:40;
+      opacity:0;pointer-events:none;
+      transition:opacity .18s;
+    }
+
+    .modal-backdrop.open{
+      opacity:1;pointer-events:auto;
+    }
+
+    .modal{
+      background:white;color:#3b003f;
+      border-radius:12px;
+      max-width:780px;width:100%;
+      padding:20px;
+      box-shadow:0 8px 40px rgba(0,0,0,0.46);
+    }
+
+    .modal .close{
+      margin-top:16px;padding:10px 14px;
+      border-radius:10px;
+      background:var(--accent);
+      color:white;
+      border:none;cursor:pointer;
+    }
+
+    footer{
+      margin-top:14px;
+      color:rgba(255,255,255,0.6);
+      font-size:0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <div>
+        <h1>Calendrier de l'Avent</h1>
+        <div class="subtitle">Petit calendrier fait maison pour madame BLOUQUIT.</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="grid" id="grid"></div>
+      <footer></footer>
+    </main>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h2 id="modalTitle">Cadeau</h2>
+      <div id="modalContent" class="gift"></div>
+      <button class="close" id="closeBtn">Fermer</button>
+    </div>
+  </div>
+
+  <template id="doorTpl">
+    <div class="door" tabindex="0">
+      <div class="ribbon">Surprise</div>
+      <div class="num"></div>
+      <div class="lock" aria-hidden="true">verrouillé</div>
+    </div>
+  </template>
+
+  <script>
+    const TOTAL = 24;
+    const ENABLE_DATE_LOCK = true;
+
+    const gifts = [
+      "Je sais que t'as pas trouvé de super calendrier de l'avent. C'est pourquoi en voici un pour t'accompagner jusqu'à Noël ! Je t'avoue que j'ai pas mal galérer à le faire donc j'espère qu'il n'y aura aucun bug ! <br><br> Je t'aime !!!!!",
+
+      `<div style="text-align:center;">
+        <img src="F:\\hmlt/4543210.jpg" alt="Coupon maquillage" style="max-width:220px;border-radius:12px;margin-bottom:12px;">
+        <p style="font-size:1.1rem;font-weight:600;color:#b3004b;">Bon pour me maquiller sans aller à la salle ❤️</p>
+      </div>`,
+
+      `<div style="text-align:center;">
+
+
+        <a href="Enquete.html" 
+                      Mini-enquête
+        </a>
+
+      </div>`,
+
+      <!-- JOUR 4 AVEC BOUTON CORRIGÉ -->
+      `<div style="text-align:center;">
+        <img src="F:\\hmlt/lettre.jpg" alt="lettre" style="max-width:220px;border-radius:12px;margin-bottom:12px;">
+        <p style="font-size:1.1rem;font-weight:600;color:#b3004b;">Petite lettre pour mon amoureuse</p>
+
+        <a href="https://docs.google.com/document/d/e/2PACX-1vRqpS5SZ7A9LOm7y4RfzqaIBvuyNeK3eHcUzac8i7Riyu0jPkrps5dow2BqoDeo0ecFop2AwuRzc6Ce/pub"
+          Clique ici
+        </a>
+      </div>`,
+
+      "Tu es entrée dans ma vie comme un souffle inattendu,<br>Un rayon de lumière dans un ciel que je croyais perdu.<br>Depuis ce jour, mon cœur ne connaît plus que ton nom,<br>Et chaque battement murmure une seule direction.<br><br>La distance parfois nous défie, mais jamais elle ne gagne,<br>Car je crois en toi, en nous, en ce lien qui nous accompagne.<br>À tes côtés, je me sens en sécurité, apaisé, entier,<br>Comme si ma vie avait enfin trouvé où se poser.<br><br>Ton sourire, ta voix, tes mots doux sans prévenir,<br>Tout en toi me donne envie d’aimer, de croire, de construire.<br>Je ne suis peut-être pas parfait, mais je t’aime infiniment,<br>Sincèrement, profondément, éternellement.<br><br>Si un jour tu doutes, laisse-moi te rappeler doucement :<br>Mon avenir sans toi n’a ni forme, ni couleur, ni présent.<br>Ma vie, je la veux avec toi, et seulement toi,<br>Aujourd’hui, demain, et pour toujours — je te le promets, Débora.<br>",
+
+      `<div style="text-align:center;">
+        <img src="F:\\hmlt/Calin.jpg" alt="Calin" style="max-width:220px;border-radius:12px;margin-bottom:12px;">
+        <p style="font-size:1.1rem;font-weight:600;color:#b3004b;">Enorme calin quand j'arrive</p>
+      </div>`,
+
+      "Plusieurs de mes affaires vont rester avec toi !",
+      
+      `<div style="text-align:center;">
+        <img src="F:\\hmlt/lettre.jpg" alt="lettre" style="max-width:220px;border-radius:12px;margin-bottom:12px;">
+        <p style="font-size:1.1rem;font-weight:600;color:#b3004b;">Mots doux</p>
+
+        <a href="https://docs.google.com/document/d/1u2wnJdBCwmNrczBxdBRGDNOAXohIES11na4D3UfB0y0/edit?usp=sharing"
+          Clique ici
+        </a>
+      </div>`,
+          `<div style="text-align:center;">
+
+
+        <a href="Puzzle.html" 
+                      Petit puzzle maison
+        </a>
+
+      </div>`,
+
+      "Citations qui me font penser à toi<br><br>« La mesure de l'amour, c’est d’aimer sans mesure. »<br>Victor Hugo<br><br>« On ne voit bien qu’avec le cœur. L’essentiel est invisible pour les yeux. »<br>Antoine de Saint-Exupéry<br><br>« Qu’importe le temps ? Qu’importe l’espace ? Je t’aime. »<br>Alfred de Musset",
+      "Petite devinette aujourd'hui !!!<br><br>Je te suis partout,<br>Même quand tu ne me vois pas.<br>Je suis là le matin,<br>Et encore le soir.<br>Je tiens dans ta main,<br>Mais j’habite ton cœur.<br>Qui suis-je ?",
+      "Un compliment du jour ❤️",
+      "Un fond d'écran surprise",
+      "Un coupon pour une sortie",
+      "Une anecdote drôle",
+      "Un petit dessin",
+      "Une citation inspirante",
+      "Un puzzle à faire ensemble",
+      "Code promo : NOEL2025",
+      "Un secret partagé",
+      "Surprise quand tu me verras !",
+      "Surprise quand tu me verras !",
+      "Surprise quand tu me verras !",
+      "Surprise quand tu me verras !"
+    ];
+
+    const grid = document.getElementById('grid');
+    const tpl = document.getElementById('doorTpl');
+
+    const today = new Date();
+    const todayDay = today.getDate();
+    const todayMonth = today.getMonth() + 1;
+
+    for(let i=1;i<=TOTAL;i++){
+      const clone = tpl.content.firstElementChild.cloneNode(true);
+      clone.querySelector('.num').textContent = i;
+
+      const gift = gifts[i-1];
+      clone.setAttribute('data-gift', gift);
+
+      const lockEl = clone.querySelector('.lock');
+
+      if(ENABLE_DATE_LOCK){
+        const isOpen = (todayMonth === 12 && todayDay >= i);
+        if(isOpen){
+          clone.classList.add('opened');
+          lockEl.style.display='none';
+        }
+      } else lockEl.style.display='none';
+
+      clone.addEventListener('click', ()=> openDoor(clone, i));
+      clone.addEventListener('keydown', (e)=>{if(e.key==='Enter' || e.key===' ') openDoor(clone,i)});
+
+      grid.appendChild(clone);
+    }
+
+    const backdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const closeBtn = document.getElementById('closeBtn');
+
+    function openDoor(elem, index){
+      const locked = elem.querySelector('.lock');
+      if(locked && locked.style.display !== 'none'){
+        locked.textContent = 'Pas encore disponible';
+        return;
+      }
+
+      elem.classList.add('opened');
+      if(locked) locked.style.display = 'none';
+
+      const giftHtml = elem.getAttribute('data-gift') || gifts[index-1];
+
+      modalTitle.textContent = `Jour ${index}`;
+      modalContent.innerHTML = giftHtml.replace(/\n/g,'<br>');
+
+      backdrop.classList.add('open');
+      backdrop.setAttribute('aria-hidden','false');
+    }
+
+    closeBtn.addEventListener('click', ()=>{
+      backdrop.classList.remove('open');
+      backdrop.setAttribute('aria-hidden','true');
+    });
+
+    backdrop.addEventListener('click',(e)=>{
+      if(e.target===backdrop) {
+        backdrop.classList.remove('open');
+        backdrop.setAttribute('aria-hidden','true')
+      }
+    });
+  </script>
+</body>
+</html>

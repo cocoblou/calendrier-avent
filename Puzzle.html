@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Puzzle Cœur 6x6</title>
+
+<style>
+    body {
+        background: #f7e9ef;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+    }
+
+    h2 {
+        color: #b3004b;
+        margin-bottom: 20px;
+    }
+
+    #puzzle-container {
+        width: 600px;
+        height: 600px;
+        margin: 0 auto;
+        position: relative;
+        background: #ffffff;
+        border: 2px solid #b3004b;
+        border-radius: 12px;
+    }
+
+    .piece {
+        width: 100px;
+        height: 100px;
+        background-image: url('coeur.jpg');
+        background-size: 600px 600px;
+        border-radius: 6px;
+        cursor: grab;
+        position: absolute;
+        transition: transform 0.1s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+</style>
+</head>
+<body>
+
+<h2>Puzzle</h2>
+
+<div id="puzzle-container"></div>
+
+<script>
+const container = document.getElementById("puzzle-container");
+
+const grid = 6;
+const pieceSize = 600 / grid;   // = 100px par pièce
+const magnetRange = 20;         // distance de l'aimant
+
+// Création des 36 pièces
+for (let i = 0; i < grid; i++) {
+    for (let j = 0; j < grid; j++) {
+
+        const piece = document.createElement("div");
+        piece.classList.add("piece");
+
+        // Position de la découpe
+        piece.style.backgroundPosition = `-${j * pieceSize}px -${i * pieceSize}px`;
+
+        // Position de départ aléatoire autour du puzzle
+        piece.style.left = (Math.random() * 500 - 50) + "px";
+        piece.style.top = (Math.random() * 500 - 50) + "px";
+
+        // Position correcte
+        piece.dataset.correctX = j * pieceSize;
+        piece.dataset.correctY = i * pieceSize;
+
+        makeDraggable(piece);
+        container.appendChild(piece);
+    }
+}
+
+function makeDraggable(piece) {
+    let offsetX, offsetY;
+
+    piece.addEventListener("mousedown", (event) => {
+        offsetX = event.clientX - piece.offsetLeft;
+        offsetY = event.clientY - piece.offsetTop;
+
+        piece.style.zIndex = 1000;
+
+        function onMouseMove(event) {
+            piece.style.left = event.clientX - offsetX + "px";
+            piece.style.top = event.clientY - offsetY + "px";
+
+            // 🧲 Aimant
+            const dx = piece.offsetLeft - piece.dataset.correctX;
+            const dy = piece.offsetTop - piece.dataset.correctY;
+
+            if (Math.abs(dx) < magnetRange && Math.abs(dy) < magnetRange) {
+                piece.style.left = piece.dataset.correctX + "px";
+                piece.style.top = piece.dataset.correctY + "px";
+            }
+        }
+
+        function onMouseUp() {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+            piece.style.zIndex = 1;
+        }
+
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+    });
+}
+</script>
+
+</body>
+</html>
